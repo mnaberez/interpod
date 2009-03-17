@@ -59,3 +59,51 @@ I/O Connections
 6522 VIA pin  6 (pa4) <- U9 3446 pin 5   INPUT
 6522 VIA pin  7 (pa5) <- U9 3446 pin 3   INPUT
 
+
+RS-232
+======
+
+I believe that the RS-232 port is transmit only because I could find no
+reference to the ACIA’s Receive Data Register (RDR) in the firmware. This
+makes sense on one hand because it was probably intended to be used with a
+printer. There is a 1489 Quad Line Receiver on the board, so I hope that the
+hardware will support it even if I am correct and the firmware does not.
+
+
+ROM Expansion
+=============
+
+If you need to burn the original firmware but don’t have a 2716 (2Kx8) handy,
+you may substitute a 2732 (4Kx8). Burning the firmware into the upper half (or
+both halves). The Interpod has pin 21 (Vpp on 2716, A11 on 2732) hardwired to
+Vcc.
+
+The Interpod firmware leaves only about 15 bytes free of its 2K EPROM. More
+space is needed to add any new functionality. You can replace the EPROM with a
+2732 and double the amount of ROM space to 4K by making a small modification
+to the Interpod. 
+
+Cut the trace on the top side of the board from U3 pin 24 (Vcc) to U3 pin 21.
+On the 2716, pin 21 is Vpp. On the 2732, pin 21 is A11. Add a jumper wire from
+U3 pin 21 to U1 pin 20.
+
+C64 Power Supply
+================
+
+Power Supply
+
+The Interpod requires an external power supply that plugs into a 7-pin female
+DIN socket on the side of the unit, next to the RS-232C port. This is the same
+DIN connector that is used by the Commodore 64 but the pin configuration is
+different.
+
+I do not have the original Interpod power supply. Ruud Baltissen does and he
+reported it uses only two pins on the DIN socket. I confirmed on the Interpod
+circuit board that all other pins on the DIN socket are unconnected. If the
+female DIN socket is compared to a compass, only the pins at West and
+North-West (left of the key) are used. Ruud measured his Interpod power supply
+on these pins at 8.7VAC, unloaded.
+
+The Commodore 64 power supply produces both 5VDC and 9VAC. Luckily, one of its
+9VAC legs is the same pin as the Interpod. I added a jumper wire for the other
+pin that makes the Interpod compatible with the C64 power supply.
