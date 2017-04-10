@@ -1,3 +1,33 @@
+;6532 RIOT (U3)
+riot = $0400
+riot_porta   = riot+$00
+riot_ddra    = riot+$01
+riot_portb   = riot+$02
+riot_ddrb    = riot+$03
+
+;6522 VIA (U4)
+via = $8000
+via_portb    = via+$00  ;Input/Ouput Register B
+via_ddrb     = via+$02  ;Data Direction Register B
+via_ddra     = via+$03  ;Data Direction Register A
+via_t1cl     = via+$04  ;read:  T1 counter, low-order
+                        ;write: T1 latches, low-order
+via_t1ch     = via+$05  ;T1 counter, high-order
+via_t2cl     = via+$08  ;read:  T2 counter, low-order
+                        ;write: T2 latches, low-order
+via_t2ch     = via+$09  ;T2 counter, high-order
+via_acr      = via+$0B  ;Auxiliary Control Register
+via_pcr      = via+$0C  ;Peripheral Control Register
+via_ifr      = via+$0D  ;Interrupt Flag Register
+via_ier      = via+$0E  ;Interrupt Enable Register
+via_porta_nh = via+$0F  ;Input/Output Register A (No Handshaking)
+
+;6850 ACIA (U5)
+acia = $a000
+acia_cr      = acia+$00 ;Control Register (on write)
+acia_sr      = acia+$00 ;Status Register (on read)
+acia_tdr     = acia+$01 ;Transmit Data Register (on write)
+acia_rdr     = acia+$01 ;Receive Data Register (on read)
 
     * = $f800
 
@@ -7,27 +37,26 @@ messages:
     !text "I1.6", $8d
     !text "ATT ERR", $8d
 
-
 LF818:  ldx     #$00
         jsr     LF85F
 LF81D:  dex
         beq     LF84D
-        lda     $800F
+        lda     via_porta_nh
         and     #$41
         cmp     #$41
         beq     LF81D
         lda     $02
         eor     #$FF
-        sta     $0402
-LF830:  bit     $800F
+        sta     riot_portb
+LF830:  bit     via_porta_nh
         bvc     LF830
         jsr     LF86C
         ldx     #$FF
-        stx     $8009
-LF83D:  lda     $800F
+        stx     via_t2ch
+LF83D:  lda     via_porta_nh
         lsr     ;a
         bcs     LF852
-        lda     $800D
+        lda     via_ifr
         and     #$20
         beq     LF83D
         lda     #$01
@@ -35,7 +64,7 @@ LF83D:  lda     $800F
 LF84D:  lda     #$80
         jsr     LF8F2
 LF852:  jsr     LF85F
-        stx     $0402
+        stx     riot_portb
         rts
 
 LF859:  jsr     LF8AC
@@ -44,7 +73,7 @@ LF85C:  lda     #$04
 LF85F:  lda     #$20
         !byte   $2C
 LF862:  lda     #$02
-        ora     $800F
+        ora     via_porta_nh
         bne     LF877
         lda     #$FB
         !byte   $2C
@@ -53,8 +82,8 @@ LF86C:  lda     #$DF
 LF86F:  lda     #$EF
         !byte   $2C
 LF872:  lda     #$FD
-LF874:  and     $800F
-LF877:  sta     $800F
+LF874:  and     via_porta_nh
+LF877:  sta     via_porta_nh
         rts
 
 LF87B:  lda     #$00
@@ -74,8 +103,8 @@ LF88E:  and     #$7F
 LF895:  jsr     LF86F
         jsr     LF862
         lda     #$FF
-        sta     $8009
-LF8A0:  lda     $800D
+        sta     via_t2ch
+LF8A0:  lda     via_ifr
         and     #$20
         beq     LF8B4
         lda     #$02
@@ -85,14 +114,14 @@ LF8AC:  lda     #$ED
         lda     #$0D
         rts
 
-LF8B4:  bit     $800F
+LF8B4:  bit     via_porta_nh
         bmi     LF8A0
         jsr     LF872
-        bit     $8000
+        bit     via_portb
         bvs     LF8C6
         lda     #$40
         jsr     LF8F2
-LF8C6:  lda     $0400
+LF8C6:  lda     riot_porta
         eor     #$FF
         pha
         sta     $07
@@ -102,14 +131,14 @@ LF8C6:  lda     $0400
         lda     $01
         sta     $03
         jsr     LFCA8
-        lda     $800F
+        lda     via_porta_nh
         ora     #$10
-        sta     $800F
-LF8E3:  bit     $800F
+        sta     via_porta_nh
+LF8E3:  bit     via_porta_nh
         bpl     LF8E3
-        lda     $800F
+        lda     via_porta_nh
         and     #$EF
-        sta     $800F
+        sta     via_porta_nh
         pla
         rts
 
@@ -117,50 +146,50 @@ LF8F2:  ora     $01
         sta     $01
         rts
 
-LF8F7:  sei
+reset:  sei
         cld
         lda     #$00
         tax
 LF8FC:  pha
         dex
         bne     LF8FC
-        stx     $0401
-        stx     $8008
+        stx     riot_ddra
+        stx     via_t2cl
         lda     #$C0
-        sta     $800B
+        sta     via_acr
         lda     #$18
-        sta     $8004
-        stx     $8005
+        sta     via_t1cl
+        stx     via_t1ch
         lda     #$8A
-        sta     $8002
+        sta     via_ddrb
         lda     #$36
-        sta     $8003
+        sta     via_ddra
         lda     #$03
-        sta     $A000
+        sta     acia_cr
         lda     #$51
-        sta     $A000
+        sta     acia_cr
         lda     #$0B
         sta     $40
         lda     #$04
         sta     $0E
         dex
         txs
-        stx     $800D
-        stx     $0403
-        stx     $0400
-        stx     $0402
-        stx     $800F
-        stx     $8000
+        stx     via_ifr
+        stx     riot_ddrb
+        stx     riot_porta
+        stx     riot_portb
+        stx     via_porta_nh
+        stx     via_portb
         ldy     #$1E
 LF945:  stx     $21,y
         dey
         bpl     LF945
         lda     #$EF
-        sta     $800C
+        sta     via_pcr
         lda     #$7F
-        sta     $800E
+        sta     via_ier
         lda     #$90
-        sta     $800E
+        sta     via_ier
         lda     #$0B
         sta     $10
         cli
@@ -171,23 +200,24 @@ LF960:  jsr     LF969
         jmp     LFAE3
 
 LF969:  lda     #$FF
-        sta     $8009
-LF96E:  lda     $800D
+        sta     via_t2ch
+LF96E:  lda     via_ifr
         and     #$20
         beq     LF96E
-        lda     $8000
+        lda     via_portb
         eor     #$02
-        sta     $8000
+        sta     via_portb
         rts
 
+irq_or_nmi:
         sta     $0F
         lda     #$10
-        sta     $800D
-        lda     $8000
+        sta     via_ifr
+        lda     via_portb
         and     #$04
         bne     LF995
         lda     #$CD
-        sta     $800C
+        sta     via_pcr
         lda     #$FF
         sta     $15
 LF995:  lda     $0F
@@ -210,9 +240,9 @@ LF9B4:  jsr     LFCC8
         jsr     LFD06
         lda     #$08
         sta     $06
-LF9BE:  lda     $8000
+LF9BE:  lda     via_portb
         tay
-        eor     $8000
+        eor     via_portb
         and     #$20
         bne     LF9BE
         tya
@@ -224,7 +254,7 @@ LF9BE:  lda     $8000
         ror     ;a
         ror     ;a
         ror     ;a
-        sta     $800C
+        sta     via_pcr
         ldx     #$0B
 LF9DD:  dex
         bne     LF9DD
@@ -233,7 +263,7 @@ LF9DD:  dex
 LF9E5:  dex
         bne     LF9E5
         lda     #$ED
-        sta     $800C
+        sta     via_pcr
         dec     $06
         bne     LF9BE
         jsr     LFCF9
@@ -251,16 +281,16 @@ LFA06:  dex
         bne     LFA06
         rts
 
-LFA0A:  lda     $800F
+LFA0A:  lda     via_porta_nh
         ldy     $09
         cpy     #$5F
         bne     LFA15
         ora     #$12
 LFA15:  and     #$FB
-        sta     $800F
-        lda     $8000
+        sta     via_porta_nh
+        lda     via_portb
         ora     #$08
-        sta     $8000
+        sta     via_portb
         jsr     LFA6D
         lda     $23
         bne     LFA2B
@@ -278,13 +308,13 @@ LFA2C:  lda     $09
 
 LFA3C:  jmp     LFDA3
 
-LFA3F:  lda     $8000
+LFA3F:  lda     via_portb
         bit     $16
         bvc     LFA49
         and     #$F7
         !byte   $2C
 LFA49:  ora     #$08
-        sta     $8000
+        sta     via_portb
         lda     $1E
         beq     LFA55
         jsr     LFE69
@@ -310,15 +340,15 @@ LFA6D:  lda     $09
 LFA75:  jsr     LFCE2
         bcc     LFA75
         jsr     LFCD5
-LFA7D:  lda     $8000
+LFA7D:  lda     via_portb
         and     #$20
         beq     LFA7D
         lda     #$01
-        sta     $8009
-LFA89:  lda     $8000
+        sta     via_t2ch
+LFA89:  lda     via_portb
         and     #$10
         beq     LFAAE
-        lda     $800D
+        lda     via_ifr
         and     #$20
         beq     LFA89
         jsr     LFCCB
@@ -328,19 +358,19 @@ LFA9C:  dex
         jsr     LFCD5
         lda     #$40
         jsr     LFCF4
-LFAA7:  lda     $8000
+LFAA7:  lda     via_portb
         and     #$10
         bne     LFAA7
 LFAAE:  ldy     #$08
-LFAB0:  lda     $8000
+LFAB0:  lda     via_portb
         and     #$10
         beq     LFAB0
-        lda     $8000
+        lda     via_portb
         rol     ;a
         rol     ;a
         rol     ;a
         ror     $09
-LFABF:  lda     $8000
+LFABF:  lda     via_portb
         and     #$10
         bne     LFABF
         dey
@@ -348,7 +378,7 @@ LFABF:  lda     $8000
         rts
 
 LFACA:  sei
-        lda     $8000
+        lda     via_portb
         and     #$04
         bne     LFAE3
         lda     $15
@@ -356,28 +386,28 @@ LFACA:  sei
         bne     LFAE3
 LFAD8:  cli
         jsr     LFCDC
-LFADC:  lda     $8000
+LFADC:  lda     via_portb
         and     #$04
         beq     LFADC
 LFAE3:  sei
         ldx     #$00
         txs
         cli
-        lda     $8000
+        lda     via_portb
         and     #$04
         bne     LFAE3
 LFAEF:  lda     #$00
         sta     $15
         lda     #$CD
-        sta     $800C
+        sta     via_pcr
         lda     #$FF
         sta     $19
         jsr     LFCD2
         jsr     LFA75
         jsr     LFCC8
         lda     #$02
-        sta     $8008
-        sta     $8009
+        sta     via_t2cl
+        sta     via_t2ch
         lda     $09
         cmp     #$3F
         beq     LFB89
@@ -426,9 +456,9 @@ LFB68:  ldx     #$00
         stx     $01
         inx
         stx     $23
-        lda     $800F
+        lda     via_porta_nh
         ora     #$12
-        sta     $800F
+        sta     via_porta_nh
         lda     #$80
         sta     $0D
         lda     $09
@@ -455,14 +485,14 @@ LFBA4:  lda     $23
 LFBA8:  jsr     LFCE2
         lsr     ;a
         bcc     LFBB7
-        lda     $800D
+        lda     via_ifr
         and     #$20
         beq     LFBA8
         bne     LFBC7
 LFBB7:  jsr     LFCE2
         lsr     ;a
         bcs     LFBC7
-        lda     $800D
+        lda     via_ifr
         and     #$20
         beq     LFBB7
         jmp     LFAD8
@@ -472,7 +502,7 @@ LFBC7:  jsr     LFCCB
         lda     $17
         beq     LFBDE
         jsr     LF969
-        lda     $8000
+        lda     via_portb
         and     #$04
         beq     LFBDE
         jmp     LFC53
@@ -480,7 +510,7 @@ LFBC7:  jsr     LFCCB
 LFBDE:  sec
         ror     $14
         jsr     LFCD2
-LFBE4:  lda     $8000
+LFBE4:  lda     via_portb
         tax
         and     #$04
         bne     LFBF4
@@ -492,7 +522,7 @@ LFBE4:  lda     $8000
 LFBF4:  jsr     LF85C
         lda     #$00
         sta     $19
-LFBFB:  lda     $8000
+LFBFB:  lda     via_portb
         tax
         and     #$04
         bne     LFC06
@@ -505,7 +535,7 @@ LFC06:  txa
         bne     LFC53
         lda     $18
         bne     LFC16
-        jmp     LF8F7
+        jmp     reset
 
 LFC16:  jsr     LFCD5
         jsr     LFA75
@@ -519,7 +549,7 @@ LFC16:  jsr     LFCD5
         jsr     LFCC8
         jsr     LFA2C
         jsr     LFCD2
-LFC34:  lda     $8000
+LFC34:  lda     via_portb
         tax
         and     #$04
         bne     LFC4C
@@ -561,7 +591,7 @@ LFC82:  jsr     LF87B
 LFC85:  jsr     LFCA8
         jsr     LFCDC
 LFC8B:  jsr     LFCA8
-        lda     $8000
+        lda     via_portb
         and     #$20
         beq     LFC8B
         jsr     LFCA8
@@ -572,7 +602,7 @@ LFC8B:  jsr     LFCA8
 LFCA2:  lda     #$0D
         sta     $07
         bne     LFC85
-LFCA8:  lda     $8000
+LFCA8:  lda     via_portb
         and     #$04
         beq     LFCB0
         rts
@@ -592,20 +622,20 @@ LFCBD:  lda     #$00
 LFCC8:  lda     #$FD
         !byte   $2C
 LFCCB:  lda     #$DF
-        and     $800C
+        and     via_pcr
         bne     LFCDE
 LFCD2:  lda     #$02
         !byte   $2C
 LFCD5:  lda     #$20
-        ora     $800C
+        ora     via_pcr
         bne     LFCDE
 LFCDC:  lda     #$EF
-LFCDE:  sta     $800C
+LFCDE:  sta     via_pcr
         rts
 
-LFCE2:  lda     $8000
+LFCE2:  lda     via_portb
         tay
-        eor     $8000
+        eor     via_portb
         and     #$10
         bne     LFCE2
         tya
@@ -622,13 +652,13 @@ LFCF4:  ora     $16
 
 LFCF9:  sei
 LFCFA:  jsr     LFCA8
-        lda     $8000
+        lda     via_portb
         and     #$20
         bne     LFCFA
         beq     LFD11
 LFD06:  sei
 LFD07:  jsr     LFCA8
-        lda     $8000
+        lda     via_portb
         and     #$20
         beq     LFD07
 LFD11:  jsr     LFCA8
@@ -648,28 +678,14 @@ LFD26:  ldx     #$00
         stx     $1E
         rts
 
-LFD2B:  !byte   $6F
-        !byte   $9F
-        !byte   $1A
-        inc     $CE
-        ror     $32
-        clc
-        !byte   $0F
-        !byte   $0B
-        !byte   $07
-        ora     $01
-LFD38:  !byte   $02
-        ora     ($01,x)
-        brk
-        brk
-        brk
-        brk
-        brk
-        brk
-        brk
-        brk
-        brk
-        brk
+LFD2B:
+    !byte $6F, $9F, $1A, $E6, $CE, $66, $32, $18
+    !byte $0F, $0B, $07, $05, $01
+
+LFD38:
+    !byte $02, $01, $01, $00, $00, $00, $00, $00
+    !byte $00, $00, $00, $00, $00
+
 LFD45:  cpx     #$0D
         bne     LFD51
         lda     $40
@@ -678,9 +694,9 @@ LFD45:  cpx     #$0D
         bne     LFD70
 LFD51:  bcs     LFD60
         lda     LFD2B,x
-        sta     $8004
+        sta     via_t1cl
         lda     LFD38,x
-        sta     $8005
+        sta     via_t1ch
         rts
 
 LFD60:  txa
@@ -708,7 +724,7 @@ LFD7F:  and     #$5F
         !byte   $09
 LFD86:  !byte   $20
 LFD87:  ora     #$40
-        sta     $A000
+        sta     acia_cr
         rts
 
         !byte   $0C
@@ -727,7 +743,7 @@ LFD93:  ora     ($09,x)
         ora     $0D
         !byte   $80
         !byte   $1D
-LFDA3:  lda     $A000
+LFDA3:  lda     acia_sr
         and     #$02
         !byte   $F0
 LFDA9:  sbc     $02A5,y
@@ -744,7 +760,7 @@ LFDBC:  cmp     #$C1
         cmp     #$DB
         bcs     LFDC6
         and     #$7F
-LFDC6:  sta     $A001
+LFDC6:  sta     acia_tdr
         ldx     #$FF
         cmp     #$0D
         bne     LFDE4
@@ -752,8 +768,8 @@ LFDC6:  sta     $A001
         and     #$20
         beq     LFDE4
         ldy     #$04
-LFDD7:  stx     $8009
-LFDDA:  lda     $800D
+LFDD7:  stx     via_t2ch
+LFDDA:  lda     via_ifr
         and     #$20
         beq     LFDDA
         dey
@@ -843,7 +859,7 @@ LFE69:  ldx     $1A
 LFE6D:  rts
 
 LFE6E:  inx
-LFE6F:  lda     LFF39,x
+LFE6F:  lda     $FF39,x ;todo label
         bpl     LFE6D
         tay
         iny
@@ -871,7 +887,7 @@ LFE96:  cmp     $02
         bne     LFE90
         beq     LFEB6
 LFE9F:  inx
-        lda     LFF39,x
+        lda     $FF39,x ;todo label
         bmi     LFEB8
         sta     $1A
         rts
@@ -946,46 +962,15 @@ LFF15:  jsr     LFF0E
         stx     $23,y
 LFF1E:  rts
 
-LFF1F:  !byte   $5C
-        lsr     $6B09
-        !byte   $07
-        and     $1533,x
-        !byte   $22
-        rol     ;a
-        !byte   $27
-        eor     $F2
-        cmp     $9E
-        cmp     $EBE6
-        eor     ($4F),y
-        !byte   $37
-        !byte   $EF
-        sta     $0D
-        !byte   $62
-        !byte   $6E
-LFF39:  !byte   $FC
-        !byte   $42
-        php
-LFF3C:  bvc     LFF3C
-        eor     $0C,x
-        brk
-        sbc     $162D,x
-        brk
-        !byte   $FC
-        and     ($FF),y
-        !byte   $32
-        !byte   $FF
-        eor     ($FF,x)
-        !byte   $42
-        !byte   $FF
-        brk
-        !byte   $FC
-        !byte   $52
-        !byte   $FF
-        !byte   $50
-LFF53:  !byte   $FF
-        !byte   $57
-        !byte   $FF
-        brk
+LFF1F:
+  !byte $5C, $4E, $09, $6B, $07, $3D, $33, $15	; \N.k.=3.
+  !byte $22, $2A, $27, $45, $F2, $C5, $9E, $CD	; "*'E....
+  !byte $E6, $EB, $51, $4F, $37, $EF, $85, $0D	; ..QO7...
+  !byte $62, $6E, $FC, $42, $08, $50, $FE, $55	; bn.B.P.U
+  !byte $0C, $00, $FD, $2D, $16, $00, $FC, $31	; ...-...1
+  !byte $FF, $32, $FF, $41, $FF, $42, $FF, $00	; .2.A.B..
+  !byte $FC, $52, $FF, $50, $FF, $57, $FF, $00	; .R.P.W..
+
 LFF57:  jsr     LF969
         jmp     LFF57
 
@@ -1073,10 +1058,9 @@ LFFC1:  rts
         ora     LFF01
         ora     LFF01
         ora     $0200
-        !byte   $FF
-        brk
-        ora     ($FF,x)
-        ror     $F7F9,x
-        sed
-        !byte   $7E
-        !byte   $F9
+        !byte   $FF, $00, $01, $ff
+
+vectors:
+    !word irq_or_nmi        ;nmi
+    !word reset             ;reset
+    !word irq_or_nmi        ;irq
