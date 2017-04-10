@@ -90,8 +90,6 @@ U3 pin 21 to U1 pin 20.
 C64 Power Supply
 ================
 
-Power Supply
-
 The Interpod requires an external power supply that plugs into a 7-pin female
 DIN socket on the side of the unit, next to the RS-232C port. This is the same
 DIN connector that is used by the Commodore 64 but the pin configuration is
