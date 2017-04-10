@@ -1,0 +1,12 @@
+sudo: false
+
+install:
+  - wget https://www.mirrorservice.org/sites/ftp.cs.vu.nl/pub/minix/distfiles/backup/acme091src.tar.gz
+  - tar xzf acme091src.tar.gz
+  - make -C acme091/src install BINDIR=$PWD/acme-bin
+  - export PATH=$PATH:$PWD/acme-bin
+
+script:
+  - acme -o out.bin interpod-1.6.asm
+  - diff out.bin interpod-1.6.bin
+
