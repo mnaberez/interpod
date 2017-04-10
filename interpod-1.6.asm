@@ -1,21 +1,13 @@
 
-L5245           = $5245
-
     * = $f800
 
-LF800:  !byte   $4F
-        !byte   $4B
-        sta     $4D43
-        !byte   $44
-        jsr     L5245
-        !byte   $52
-        sta     $3149
-        rol     $8D36
-        eor     ($54,x)
-        !byte   $54
-        jsr     L5245
-        !byte   $52
-        !byte   $8D
+messages:
+    !text "OK", $8d
+    !text "CMD ERR", $8d
+    !text "I1.6", $8d
+    !text "ATT ERR", $8d
+
+
 LF818:  ldx     #$00
         jsr     LF85F
 LF81D:  dex
@@ -70,7 +62,7 @@ LF87B:  lda     #$00
         lda     $1D
         beq     LF895
         ldy     $10
-        lda     LF800,y
+        lda     messages,y
         bpl     LF88E
         ldx     #$40
         stx     $01
