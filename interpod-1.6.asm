@@ -859,7 +859,7 @@ LFE69:  ldx     $1A
 LFE6D:  rts
 
 LFE6E:  inx
-LFE6F:  lda     $FF39,x ;todo label
+LFE6F:  lda     LFF39,x
         bpl     LFE6D
         tay
         iny
@@ -966,7 +966,9 @@ LFF1F:
   !byte $5C, $4E, $09, $6B, $07, $3D, $33, $15	; \N.k.=3.
   !byte $22, $2A, $27, $45, $F2, $C5, $9E, $CD	; "*'E....
   !byte $E6, $EB, $51, $4F, $37, $EF, $85, $0D	; ..QO7...
-  !byte $62, $6E, $FC, $42, $08, $50, $FE, $55	; bn.B.P.U
+  !byte $62, $6E                                ; bn
+LFF39:
+  !byte $FC, $42, $08, $50, $FE, $55	        ; .B.P.U
   !byte $0C, $00, $FD, $2D, $16, $00, $FC, $31	; ...-...1
   !byte $FF, $32, $FF, $41, $FF, $42, $FF, $00	; .2.A.B..
   !byte $FC, $52, $FF, $50, $FF, $57, $FF, $00	; .R.P.W..
