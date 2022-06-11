@@ -16,3 +16,11 @@ jobs:
     - name: Re-assemble original binary
       run: |
         make list
+
+    - name: 'Upload build artifacts'
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: |
+            interpod-1.6.bin
+            interpod-1.6.lst
