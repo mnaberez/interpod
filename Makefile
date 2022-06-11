@@ -1,5 +1,5 @@
 # Requirements:
-#  - ACME (https://www.mirrorservice.org/sites/ftp.cs.vu.nl/pub/minix/distfiles/backup/acme091src.tar.gz)
+#  - ACME 0.97 (https://sourceforge.net/projects/acme-crossass/)
 
 # default build target
 all: interpod-1.6.bin diff
