@@ -1,6 +1,7 @@
 Address Decoding Circuits
 =========================
 
+```text
 6502 pin 25 (a15) tied to 6532 pin 37 (/cs2)
              also tied to 6522 pin 24 (cs1)
 
@@ -19,11 +20,12 @@ Address Decoding Circuits
 6850 /cs2 tied to 6502 pin 24 (a14)
 6850 cs1 tied to 6502 pin 23 (a13)
 6850 E tied to 6502 pin 39 (phi2)
-
+```
 
 Address Decoding
 ================
 
+```text
 Selected   A15  A14  A13  A12  A11  A10   Base    Mirror Used by Firmware
 ---------- ---  ---  ---  ---  ---  ---   -----   -----------------------
 6532 RAM    0    0    X    X    X    0    $0000   $0000
@@ -31,18 +33,20 @@ Selected   A15  A14  A13  A12  A11  A10   Base    Mirror Used by Firmware
 6522 VIA    1    X    0    X    X    X    $8000   $8000
 6850 ACIA   X    0    1    X    X    X    $2000   $A000
 2716 EPROM  X    1    X    X    X    X    $4000   $F000
-
+```
 
 Interrupt Connections
 =====================
 
+```text
 6850 /IRQ is pulled up to Vcc but not otherwise connected
 6532 /IRQ is no-connect
-
+```
 
 I/O Connections
 ===============
 
+```text
 6522 VIA pin 17 (pb7) -> 6850 pin 4     OUTPUT
 6522 VIA pin 16 (pb6) <- 7417 pin 10    INPUT
 6522 VIA pin 15 (pb5) <- 7417 pin 12    INPUT
@@ -58,7 +62,7 @@ I/O Connections
 6522 VIA pin  4 (pa2) <- U9 3446 pin 11  INPUT
 6522 VIA pin  6 (pa4) <- U9 3446 pin 5   INPUT
 6522 VIA pin  7 (pa5) <- U9 3446 pin 3   INPUT
-
+```
 
 RS-232
 ======
@@ -81,7 +85,7 @@ Vcc.
 The Interpod firmware leaves only about 15 bytes free of its 2K EPROM. More
 space is needed to add any new functionality. You can replace the EPROM with a
 2732 and double the amount of ROM space to 4K by making a small modification
-to the Interpod. 
+to the Interpod.
 
 Cut the trace on the top side of the board from U3 pin 24 (Vcc) to U3 pin 21.
 On the 2716, pin 21 is Vpp. On the 2732, pin 21 is A11. Add a jumper wire from
